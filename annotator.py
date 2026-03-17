@@ -1,17 +1,19 @@
 import os
 import shutil
 from pathlib import Path
-import urllib.request
 
 from ultralytics import YOLO
-import cv2
+from tqdm import tqdm
 
 # -----------------------------
 # MODEL
 # -----------------------------
 
 MODEL_PATH = "yolov8s.pt"
+model = YOLO(MODEL_PATH)
 
+CAR_CLASS_ID = 2
+CONF_THRESHOLD = 0.4
 
 # -----------------------------
 # INPUT
@@ -42,48 +44,58 @@ IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 LABELS_DIR.mkdir(parents=True, exist_ok=True)
 
 # -----------------------------
-# LOAD MODEL
+# SPOČÍTAT CELKOVÝ POČET OBRÁZKŮ
 # -----------------------------
 
-model = YOLO(MODEL_PATH)
-
-# -----------------------------
-# ANOTACE
-# -----------------------------
+all_images = []
 
 for brand, folder in INPUT_FOLDERS.items():
+    for img_name in os.listdir(folder):
+        if img_name.lower().endswith((".jpg", ".jpeg", ".png")):
+            all_images.append((brand, folder, img_name))
+
+# -----------------------------
+# PROGRESS BAR
+# -----------------------------
+
+for brand, folder, img_name in tqdm(all_images, desc="Anotuji obrázky"):
 
     class_id = CLASS_MAP[brand]
 
-    for img_name in os.listdir(folder):
+    img_path = os.path.join(folder, img_name)
 
-        if not img_name.lower().endswith((".jpg", ".jpeg", ".png")):
+    results = model(img_path)
+
+    label_lines = []
+
+    for r in results:
+
+        if r.boxes is None:
             continue
 
-        img_path = os.path.join(folder, img_name)
+        for box in r.boxes:
 
-        results = model(img_path)
+            detected_class = int(box.cls.item())
+            conf = float(box.conf.item())
 
-        label_lines = []
-
-        for r in results:
-            if r.boxes is None:
+            # pouze auta
+            if detected_class != CAR_CLASS_ID or conf < CONF_THRESHOLD:
                 continue
 
-            for box in r.boxes.xywhn.cpu().numpy():
-                x, y, w, h = box
-                label_lines.append(f"{class_id} {x} {y} {w} {h}")
+            x, y, w, h = box.xywhn[0].tolist()
 
-        if not label_lines:
-            continue
+            label_lines.append(f"{class_id} {x} {y} {w} {h}")
 
-        # copy image
-        shutil.copy(img_path, IMAGES_DIR / img_name)
+    if not label_lines:
+        continue
 
-        # save label
-        label_path = LABELS_DIR / (Path(img_name).stem + ".txt")
+    # copy image
+    shutil.copy(img_path, IMAGES_DIR / img_name)
 
-        with open(label_path, "w") as f:
-            f.write("\n".join(label_lines))
+    # save label
+    label_path = LABELS_DIR / (Path(img_name).stem + ".txt")
+
+    with open(label_path, "w") as f:
+        f.write("\n".join(label_lines))
 
 print("Hotovo ✔ Dataset je ve složce:", OUTPUT_DIR)

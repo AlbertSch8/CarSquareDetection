@@ -3,7 +3,6 @@ import random
 from pathlib import Path
 import cv2
 import urllib.request
-
 from ultralytics import YOLO
 
 # -------------------------
@@ -12,7 +11,11 @@ from ultralytics import YOLO
 
 MODEL_PATH = "yolov8s.pt"
 
+
 model = YOLO(MODEL_PATH)
+
+CAR_CLASS_ID = 2   # COCO class for "car"
+CONF_THRESHOLD = 0.4
 
 # -------------------------
 # INPUT
@@ -32,7 +35,7 @@ OUTPUT = Path("ukazky_anotaci")
 OUTPUT.mkdir(exist_ok=True)
 
 # -------------------------
-# FUNCTION
+# ANNOTATION FUNCTION
 # -------------------------
 
 def annotate_image(img_path, label):
@@ -48,18 +51,25 @@ def annotate_image(img_path, label):
 
         for box in r.boxes:
 
-            x1, y1, x2, y2 = box.xyxy[0].tolist()
+            class_id = int(box.cls.item())
+            conf = float(box.conf.item())
 
-            x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+            # filtr pouze auta
+            if class_id != CAR_CLASS_ID or conf < CONF_THRESHOLD:
+                continue
+
+            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
 
             cv2.rectangle(img, (x1, y1), (x2, y2), (0,255,0), 2)
 
+            text = f"{label} {conf:.2f}"
+
             cv2.putText(
                 img,
-                label,
+                text,
                 (x1, y1-10),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
+                0.7,
                 (0,255,0),
                 2
             )
@@ -91,4 +101,4 @@ for brand, folder in FOLDERS.items():
         cv2.imwrite(str(OUTPUT / out_name), annotated)
 
 
-print("Hotovo. Ukázky v:", OUTPUT)
+print("Hotovo ✔ Ukázky jsou ve složce:", OUTPUT)

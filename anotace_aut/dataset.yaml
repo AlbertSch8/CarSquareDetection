@@ -1,9 +1,0 @@
-path: anotace_aut
-
-train: images
-val: images
-
-names:
-  0: skoda
-  1: audi
-  2: volkswagen
