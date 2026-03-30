@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rozpoznávač aut</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0f0f13;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 0.95rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .card {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    /* ---- DROP ZONE ---- */
+    .drop-zone {
+      border: 2px dashed #3a3a55;
+      border-radius: 12px;
+      padding: 2.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #7c4dff;
+      background: rgba(124,77,255,0.05);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .drop-text { color: #aaa; font-size: 0.9rem; }
+    .drop-text span { color: #7c4dff; font-weight: 600; }
+
+    /* ---- PREVIEW ---- */
+    #preview-wrap {
+      margin-top: 1.5rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    #preview-wrap img {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid #2e2e3e;
+    }
+
+    /* ---- BUTTON ---- */
+    button#analyze-btn {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #4fc3f7, #7c4dff);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: none;
+    }
+
+    button#analyze-btn:hover { opacity: 0.88; }
+    button#analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ---- SPINNER ---- */
+    .spinner {
+      display: none;
+      width: 36px; height: 36px;
+      border: 4px solid #2e2e3e;
+      border-top-color: #7c4dff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 1.5rem auto 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- RESULTS ---- */
+    #results {
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .result-img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #2e2e3e;
+    }
+
+    .detections {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .detection-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #22223a;
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .brand-skoda   { color: #4caf50; }
+    .brand-audi    { color: #f44336; }
+    .brand-volkswagen { color: #2196f3; }
+
+    .conf-bar-wrap {
+      flex: 1;
+      margin: 0 1rem;
+      background: #12121c;
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .conf-bar {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    .brand-skoda   + .conf-bar-wrap .conf-bar,
+    .conf-bar.skoda   { background: #4caf50; }
+    .conf-bar.audi    { background: #f44336; }
+    .conf-bar.volkswagen { background: #2196f3; }
+
+    .conf-value { font-size: 0.9rem; color: #bbb; white-space: nowrap; }
+
+    .message-box {
+      background: #22223a;
+      border-left: 3px solid #7c4dff;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-top: 1rem;
+    }
+
+    .error-box {
+      background: #2a1a1a;
+      border-left: 3px solid #f44336;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: #f99;
+      margin-top: 1rem;
+    }
+
+    .reset-btn {
+      margin-top: 1rem;
+      background: transparent;
+      border: 1px solid #3a3a55;
+      color: #aaa;
+      border-radius: 8px;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.2s;
+      display: block;
+      width: 100%;
+    }
+    .reset-btn:hover { border-color: #7c4dff; color: #fff; }
+
+    footer {
+      margin-top: 3rem;
+      color: #444;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Rozpoznávač aut</h1>
+  <p class="subtitle">Škoda &bull; Audi &bull; Volkswagen &mdash; powered by YOLOv8</p>
+
+  <div class="card">
+    <!-- Drop zone -->
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" />
+      <div class="drop-icon">📸</div>
+      <p class="drop-text">Přetáhni fotku sem nebo <span>klikni pro výběr</span></p>
+      <p class="drop-text" style="margin-top:0.3rem;font-size:0.8rem;">JPG, PNG, WEBP &bull; max 10 MB</p>
+    </div>
+
+    <!-- Náhled před odesláním -->
+    <div id="preview-wrap">
+      <img id="preview-img" src="" alt="náhled" />
+    </div>
+
+    <button id="analyze-btn">Analyzovat</button>
+
+    <div class="spinner" id="spinner"></div>
+
+    <!-- Výsledky -->
+    <div id="results"></div>
+  </div>
+
+  <footer>Model trénovaný na vlastním datasetu &bull; YOLOv8</footer>
+
+<script>
+  const dropZone  = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const previewWrap = document.getElementById('preview-wrap');
+  const previewImg  = document.getElementById('preview-img');
+  const analyzeBtn  = document.getElementById('analyze-btn');
+  const spinner     = document.getElementById('spinner');
+  const resultsDiv  = document.getElementById('results');
+
+  let selectedFile = null;
+
+  function brandClass(brand) {
+    const b = brand.toLowerCase();
+    if (b.includes('škoda') || b.includes('skoda')) return 'skoda';
+    if (b.includes('audi')) return 'audi';
+    if (b.includes('volkswagen')) return 'volkswagen';
+    return '';
+  }
+
+  function showPreview(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      previewWrap.style.display = 'flex';
+      analyzeBtn.style.display = 'block';
+      resultsDiv.style.display = 'none';
+      resultsDiv.innerHTML = '';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) showPreview(fileInput.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) showPreview(file);
+  });
+
+  analyzeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    analyzeBtn.disabled = true;
+    spinner.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    resultsDiv.innerHTML = '';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const res = await fetch('/predict', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      spinner.style.display = 'none';
+      resultsDiv.style.display = 'block';
+
+      if (data.error) {
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ ${data.error}</div>`;
+      } else {
+        let html = `<img class="result-img" src="data:image/jpeg;base64,${data.image}" alt="výsledek" />`;
+
+        if (data.message) {
+          html += `<div class="message-box">ℹ️ ${data.message}</div>`;
+        }
+
+        if (data.detections && data.detections.length > 0) {
+          html += '<div class="detections">';
+          for (const d of data.detections) {
+            const bc = brandClass(d.brand);
+            html += `
+              <div class="detection-item">
+                <span class="brand-name brand-${bc}">${d.brand}</span>
+                <div class="conf-bar-wrap">
+                  <div class="conf-bar ${bc}" style="width:${d.confidence}%"></div>
+                </div>
+                <span class="conf-value">${d.confidence} %</span>
+              </div>`;
+          }
+          html += '</div>';
+        }
+
+        html += `<button class="reset-btn" id="reset-btn">↩ Nahrát jiný obrázek</button>`;
+        resultsDiv.innerHTML = html;
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+          selectedFile = null;
+          fileInput.value = '';
+          previewWrap.style.display = 'none';
+          analyzeBtn.style.display = 'none';
+          resultsDiv.style.display = 'none';
+          resultsDiv.innerHTML = '';
+          analyzeBtn.disabled = false;
+        });
+      }
+    } catch (err) {
+      spinner.style.display = 'none';
+      resultsDiv.style.display = 'block';
+      resultsDiv.innerHTML = `<div class="error-box">⚠️ Chyba při komunikaci se serverem.</div>`;
+    }
+
+    analyzeBtn.disabled = false;
+  });
+</script>
+</body>
+</html>
