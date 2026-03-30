@@ -5,3 +5,14 @@ obrazky_audi
 obrazky_skoda
 obrazky_volkswagen
 anotace_aut
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Velké modely (nechceme na GitHub)
+yolov8s.pt
+
+# Výstupy
+ukazky_anotaci/
