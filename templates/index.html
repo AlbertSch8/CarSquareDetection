@@ -603,7 +603,7 @@
     formData.append('file', selectedFile);
 
     const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 90000);
+    const timeoutId  = setTimeout(() => controller.abort(), 180000);
 
     // Po 2s přejdeme na krok "analyzuji"
     const analyzeTimer = setTimeout(() => {
@@ -611,10 +611,10 @@
       spinnerMsg.textContent = 'Analyzuji…';
     }, 2000);
 
-    // Po 12s upozorníme na probouzení
+    // Po 10s upozorníme na probouzení
     const wakeTimer = setTimeout(() => {
-      spinnerMsg.textContent = 'Server se probouzí, chvíli strpení…';
-    }, 12000);
+      spinnerMsg.textContent = 'Server se probouzí ze spánku, může to trvat až 2 min…';
+    }, 10000);
 
     try {
       const res = await fetch('/predict', { method: 'POST', body: formData, signal: controller.signal });
@@ -700,7 +700,7 @@
       spinnerWrap.style.display = 'none';
       resultsDiv.style.display  = 'block';
       if (err.name === 'AbortError') {
-        resultsDiv.innerHTML = `<div class="error-box">⚠️ Server neodpověděl včas (90 s). Zkus to znovu – server se pravděpodobně probouzel.</div>`;
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ Server neodpověděl včas (3 min). Zkus to znovu – server se pravděpodobně stále probouzí.</div>`;
       } else {
         resultsDiv.innerHTML = `<div class="error-box">⚠️ Chyba při komunikaci se serverem.</div>`;
       }
