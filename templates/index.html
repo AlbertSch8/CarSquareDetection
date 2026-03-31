@@ -537,9 +537,9 @@
     localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
   }
 
-  function addToHistory(imgB64, brands, filename) {
+  function addToHistory(imgB64, detections, filename) {
     const items = loadHistory();
-    items.unshift({ imgB64, brands, filename, ts: Date.now() });
+    items.unshift({ imgB64, detections, filename, ts: Date.now() });
     saveHistory(items.slice(0, MAX_HISTORY));
     renderHistory();
   }
@@ -553,8 +553,16 @@
       const el = document.createElement('div');
       el.className = 'history-item';
       const label = item.filename ? item.filename.slice(0, 20) : 'fotka';
-      const brandsText = item.brands && item.brands.length
-        ? item.brands.map(b => `<span class="brand-${brandClass(b)}">${b}</span>`).join(', ')
+      // podpora starého formátu (brands pole) i nového (detections pole)
+      const dets = item.detections
+        ? item.detections
+        : (item.brands ? item.brands.map(b => ({ brand: b, confidence: null })) : []);
+      const brandsText = dets.length
+        ? dets.map(d => {
+            const bc = brandClass(d.brand);
+            const conf = d.confidence !== null ? `<span style="color:#666;font-size:0.7rem;"> ${d.confidence} %</span>` : '';
+            return `<span class="brand-${bc}">${d.brand}</span>${conf}`;
+          }).join('<br>')
         : '<span style="color:#555">?</span>';
       el.innerHTML = `
         <img src="data:image/jpeg;base64,${item.imgB64}" alt="historie" loading="lazy" />
@@ -635,10 +643,9 @@
         resultsDiv.innerHTML = `<div class="error-box">⚠️ ${data.error}</div>`;
       } else {
         lastResultB64 = data.image;
-        const detectedBrands = data.detections ? data.detections.map(d => d.brand) : [];
 
         // Ulož do historie
-        addToHistory(data.image, detectedBrands, selectedFile.name);
+        addToHistory(data.image, data.detections || [], selectedFile.name);
 
         let html = `<img class="result-img" id="result-img" src="data:image/jpeg;base64,${data.image}" alt="výsledek" />`;
 
