@@ -2,6 +2,14 @@
 
 Webová aplikace pro detekci a klasifikaci značek automobilů (Škoda, Audi, Volkswagen) pomocí modelu Ultralytics YOLO. Nahraj fotku auta a aplikace ti řekne, o jakou značku se jedná.
 
+## 🌐 Online verze
+
+Aplikace běží na hostingu [Render](https://render.com) a je přístupná odkudkoliv bez nutnosti instalace:
+
+**[https://carsquaredetection.onrender.com](https://carsquaredetection.onrender.com)**
+
+> Poznámka: Render při nečinnosti uspí free instanci – první načtení může trvat ~30 sekund.
+
 ---
 
 ## 🚀 Spuštění na jiném PC (krok po kroku)
