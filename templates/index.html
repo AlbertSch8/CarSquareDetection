@@ -611,9 +611,9 @@
       spinnerMsg.textContent = 'Analyzuji…';
     }, 2000);
 
-    // Po 10s upozorníme na probouzení
+    // Po 10s upozorníme že to trvá déle
     const wakeTimer = setTimeout(() => {
-      spinnerMsg.textContent = 'Server se probouzí ze spánku, může to trvat až 2 min…';
+      spinnerMsg.textContent = 'Zpracovávám, chvíli strpení…';
     }, 10000);
 
     try {
