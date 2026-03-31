@@ -35,6 +35,9 @@ def allowed_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+MAX_INFER_SIZE = 640  # px – šetří RAM a CPU na free tieru
+
+
 def run_inference(image_bytes: bytes):
     """Spustí model na obrázku a vrátí anotovaný obrázek + výsledky."""
     np_arr = np.frombuffer(image_bytes, np.uint8)
@@ -43,7 +46,13 @@ def run_inference(image_bytes: bytes):
     if img is None:
         return None, []
 
-    results = model(img, verbose=False)
+    # Zmenšit velké obrázky – free tier má jen 512 MB RAM
+    h, w = img.shape[:2]
+    if max(h, w) > MAX_INFER_SIZE:
+        scale = MAX_INFER_SIZE / max(h, w)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+
+    results = model(img, verbose=False, imgsz=640)
 
     detections = []
 
@@ -71,6 +80,12 @@ def run_inference(image_bytes: bytes):
     _, buf = cv2.imencode(".jpg", img)
     img_b64 = base64.b64encode(buf).decode("utf-8")
     return img_b64, detections
+
+
+@app.route("/health")
+def health():
+    """Warm-up endpoint – volá se hned po načtení stránky."""
+    return "ok", 200
 
 
 @app.route("/")

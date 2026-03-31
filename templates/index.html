@@ -243,6 +243,7 @@
     <button id="analyze-btn">Analyzovat</button>
 
     <div class="spinner" id="spinner"></div>
+    <p id="spinner-msg" style="text-align:center;color:#888;font-size:0.85rem;margin-top:0.5rem;display:none;">Analyzuji&hellip;</p>
 
     <!-- Výsledky -->
     <div id="results"></div>
@@ -295,22 +296,42 @@
     if (file) showPreview(file);
   });
 
+  // Warm-up: jakmile se stránka načte, probudíme server
+  fetch('/health').catch(() => {});
+
+  const spinnerMsg = document.getElementById('spinner-msg');
+  let spinnerTimer = null;
+
   analyzeBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     analyzeBtn.disabled = true;
     spinner.style.display = 'block';
+    spinnerMsg.style.display = 'block';
+    spinnerMsg.textContent = 'Analyzuji\u2026';
     resultsDiv.style.display = 'none';
     resultsDiv.innerHTML = '';
+
+    // Po 10s upozorníme uživatele že server se probouzí
+    spinnerTimer = setTimeout(() => {
+      spinnerMsg.textContent = 'Server se probouzí, chvíli strpení\u2026';
+    }, 10000);
 
     const formData = new FormData();
     formData.append('file', selectedFile);
 
+    // Timeout 90 sekund
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
+
     try {
-      const res = await fetch('/predict', { method: 'POST', body: formData });
+      const res = await fetch('/predict', { method: 'POST', body: formData, signal: controller.signal });
+      clearTimeout(timeoutId);
+      clearTimeout(spinnerTimer);
       const data = await res.json();
 
       spinner.style.display = 'none';
+      spinnerMsg.style.display = 'none';
       resultsDiv.style.display = 'block';
 
       if (data.error) {
@@ -352,9 +373,15 @@
         });
       }
     } catch (err) {
+      clearTimeout(spinnerTimer);
       spinner.style.display = 'none';
+      spinnerMsg.style.display = 'none';
       resultsDiv.style.display = 'block';
-      resultsDiv.innerHTML = `<div class="error-box">⚠️ Chyba při komunikaci se serverem.</div>`;
+      if (err.name === 'AbortError') {
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ Server neodpovědl včas (90 s). Zkus to znovu &ndash; server se pravděpodobně probouzel.</div>`;
+      } else {
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ Chyba při komunikaci se serverem.</div>`;
+      }
     }
 
     analyzeBtn.disabled = false;
