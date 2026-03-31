@@ -31,7 +31,7 @@
     .subtitle {
       color: #888;
       font-size: 0.95rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
     }
 
     .card {
@@ -44,11 +44,26 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     }
 
+    /* ---- INFO BOX ---- */
+    .info-box {
+      background: #12121e;
+      border: 1px solid #2e2e3e;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      color: #888;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .info-box strong { color: #bbb; }
+    .info-box a { color: #7c4dff; text-decoration: none; }
+    .info-box a:hover { text-decoration: underline; }
+
     /* ---- DROP ZONE ---- */
     .drop-zone {
       border: 2px dashed #3a3a55;
       border-radius: 12px;
-      padding: 2.5rem 1rem;
+      padding: 2rem 1rem;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
@@ -60,20 +75,101 @@
       background: rgba(124,77,255,0.05);
     }
 
-    .drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
+    /* skrytý file input – ovládá se kliknutím na drop-zone */
+    #file-input {
+      display: none;
     }
 
-    .drop-icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-    }
-
+    .drop-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
     .drop-text { color: #aaa; font-size: 0.9rem; }
     .drop-text span { color: #7c4dff; font-weight: 600; }
+
+    /* tlačítka pro výběr souboru */
+    .upload-btns {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .upload-btn {
+      background: #22223a;
+      border: 1px solid #3a3a55;
+      color: #ccc;
+      border-radius: 8px;
+      padding: 0.5rem 1.1rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .upload-btn:hover { border-color: #7c4dff; color: #fff; }
+
+    /* ---- PROGRESS STEPS ---- */
+    .progress-steps {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: #555;
+      transition: color 0.3s;
+    }
+
+    .step-dot {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #22223a;
+      border: 2px solid #3a3a55;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: background 0.3s, border-color 0.3s;
+      flex-shrink: 0;
+    }
+
+    .step.active { color: #bbb; }
+    .step.active .step-dot { border-color: #7c4dff; background: rgba(124,77,255,0.15); color: #7c4dff; }
+    .step.done { color: #4caf50; }
+    .step.done .step-dot { border-color: #4caf50; background: rgba(76,175,80,0.15); color: #4caf50; }
+
+    .step-arrow {
+      color: #333;
+      margin: 0 0.4rem;
+      font-size: 0.75rem;
+    }
+
+    /* ---- SPINNER ---- */
+    .spinner {
+      display: none;
+      width: 32px; height: 32px;
+      border: 3px solid #2e2e3e;
+      border-top-color: #7c4dff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #spinner-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    #spinner-msg { color: #888; font-size: 0.85rem; text-align: center; }
 
     /* ---- PREVIEW ---- */
     #preview-wrap {
@@ -90,7 +186,7 @@
       border: 1px solid #2e2e3e;
     }
 
-    /* ---- BUTTON ---- */
+    /* ---- ANALYZE BUTTON ---- */
     button#analyze-btn {
       margin-top: 1.5rem;
       width: 100%;
@@ -105,33 +201,40 @@
       transition: opacity 0.2s;
       display: none;
     }
-
     button#analyze-btn:hover { opacity: 0.88; }
     button#analyze-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* ---- SPINNER ---- */
-    .spinner {
-      display: none;
-      width: 36px; height: 36px;
-      border: 4px solid #2e2e3e;
-      border-top-color: #7c4dff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 1.5rem auto 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
     /* ---- RESULTS ---- */
-    #results {
-      margin-top: 1.5rem;
-      display: none;
-    }
+    #results { margin-top: 1.5rem; display: none; }
 
     .result-img {
       width: 100%;
       border-radius: 10px;
       border: 1px solid #2e2e3e;
     }
+
+    .result-actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.75rem;
+    }
+
+    .result-actions button {
+      flex: 1;
+      background: #22223a;
+      border: 1px solid #3a3a55;
+      color: #ccc;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .result-actions button:hover { border-color: #7c4dff; color: #fff; }
 
     .detections {
       margin-top: 1rem;
@@ -149,13 +252,9 @@
       padding: 0.6rem 1rem;
     }
 
-    .brand-name {
-      font-weight: 700;
-      font-size: 1.05rem;
-    }
-
-    .brand-skoda   { color: #4caf50; }
-    .brand-audi    { color: #f44336; }
+    .brand-name { font-weight: 700; font-size: 1.05rem; }
+    .brand-skoda      { color: #4caf50; }
+    .brand-audi       { color: #f44336; }
     .brand-volkswagen { color: #2196f3; }
 
     .conf-bar-wrap {
@@ -167,14 +266,9 @@
       overflow: hidden;
     }
 
-    .conf-bar {
-      height: 100%;
-      border-radius: 99px;
-    }
-
-    .brand-skoda   + .conf-bar-wrap .conf-bar,
-    .conf-bar.skoda   { background: #4caf50; }
-    .conf-bar.audi    { background: #f44336; }
+    .conf-bar { height: 100%; border-radius: 99px; }
+    .conf-bar.skoda      { background: #4caf50; }
+    .conf-bar.audi       { background: #f44336; }
     .conf-bar.volkswagen { background: #2196f3; }
 
     .conf-value { font-size: 0.9rem; color: #bbb; white-space: nowrap; }
@@ -199,25 +293,86 @@
       margin-top: 1rem;
     }
 
-    .reset-btn {
-      margin-top: 1rem;
-      background: transparent;
-      border: 1px solid #3a3a55;
-      color: #aaa;
-      border-radius: 8px;
-      padding: 0.5rem 1.2rem;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: border-color 0.2s;
-      display: block;
+    /* ---- HISTORIE ---- */
+    #history-section {
       width: 100%;
+      max-width: 640px;
+      margin-top: 2rem;
     }
-    .reset-btn:hover { border-color: #7c4dff; color: #fff; }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .history-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #888;
+    }
+
+    .clear-history-btn {
+      background: transparent;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: color 0.2s;
+    }
+    .clear-history-btn:hover { color: #f44336; }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .history-item {
+      background: #1a1a24;
+      border: 1px solid #2e2e3e;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .history-item:hover { border-color: #7c4dff; }
+
+    .history-item img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+
+    .history-item-label {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.72rem;
+      color: #888;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-item-brands {
+      padding: 0 0.5rem 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
 
     footer {
       margin-top: 3rem;
       color: #444;
       font-size: 0.8rem;
+      text-align: center;
+    }
+    footer a { color: #555; text-decoration: none; }
+    footer a:hover { color: #7c4dff; }
+
+    @media (max-width: 480px) {
+      .card { padding: 1.2rem; }
+      h1 { font-size: 1.6rem; }
     }
   </style>
 </head>
@@ -227,65 +382,200 @@
   <p class="subtitle">Škoda &bull; Audi &bull; Volkswagen &mdash; powered by YOLOv8</p>
 
   <div class="card">
-    <!-- Drop zone -->
-    <div class="drop-zone" id="drop-zone">
-      <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" />
-      <div class="drop-icon">📸</div>
-      <p class="drop-text">Přetáhni fotku sem nebo <span>klikni pro výběr</span></p>
-      <p class="drop-text" style="margin-top:0.3rem;font-size:0.8rem;">JPG, PNG, WEBP &bull; max 10 MB</p>
+
+    <!-- Info o modelu -->
+    <div class="info-box">
+      <strong>Jak to funguje:</strong> Nahraj fotku auta a model ti řekne jestli jde o
+      <strong>Škodu</strong>, <strong>Audi</strong> nebo <strong>Volkswagen</strong>.
+      Jiné značky model nerozpozná &ndash; byl trénován pouze na těchto třech.
+      Nejlepší výsledky dává fotka celého auta z boku nebo zepředu.
+      <br><a href="https://github.com/AlbertSch8/CarSquareDetection" target="_blank" rel="noopener">→ Zdrojový kód na GitHubu</a>
     </div>
 
-    <!-- Náhled před odesláním -->
+    <!-- Drop zone -->
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-icon">📸</div>
+      <p class="drop-text">Přetáhni fotku sem</p>
+      <p class="drop-text" style="margin-top:0.25rem;font-size:0.8rem;color:#555;">JPG, PNG, WEBP &bull; max 10 MB</p>
+    </div>
+
+    <!-- Tlačítka pro výběr -->
+    <div class="upload-btns">
+      <button class="upload-btn" id="choose-file-btn">🗂 Vybrat soubor</button>
+      <button class="upload-btn" id="camera-btn" style="display:none;">📷 Vyfotit kamerou</button>
+    </div>
+
+    <!-- Skryté file inputy -->
+    <input type="file" id="file-input"   accept="image/jpeg,image/png,image/webp" />
+    <input type="file" id="camera-input" accept="image/*" capture="environment" />
+
+    <!-- Náhled -->
     <div id="preview-wrap">
       <img id="preview-img" src="" alt="náhled" />
     </div>
 
     <button id="analyze-btn">Analyzovat</button>
 
-    <div class="spinner" id="spinner"></div>
-    <p id="spinner-msg" style="text-align:center;color:#888;font-size:0.85rem;margin-top:0.5rem;display:none;">Analyzuji&hellip;</p>
+    <!-- Progress kroky -->
+    <div class="progress-steps" id="progress-steps">
+      <div class="step" id="step-upload">
+        <div class="step-dot">1</div>
+        <span>Nahrávám</span>
+      </div>
+      <span class="step-arrow">›</span>
+      <div class="step" id="step-analyze">
+        <div class="step-dot">2</div>
+        <span>Analyzuji</span>
+      </div>
+      <span class="step-arrow">›</span>
+      <div class="step" id="step-done">
+        <div class="step-dot">✓</div>
+        <span>Hotovo</span>
+      </div>
+    </div>
+
+    <!-- Spinner -->
+    <div id="spinner-wrap">
+      <div class="spinner" id="spinner"></div>
+      <p id="spinner-msg">Analyzuji&hellip;</p>
+    </div>
 
     <!-- Výsledky -->
     <div id="results"></div>
   </div>
 
-  <footer>Model trénovaný na vlastním datasetu &bull; YOLOv8</footer>
+  <!-- Historie -->
+  <div id="history-section" style="display:none;">
+    <div class="history-header">
+      <h2>Poslední analýzy</h2>
+      <button class="clear-history-btn" id="clear-history-btn">✕ Smazat historii</button>
+    </div>
+    <div class="history-grid" id="history-grid"></div>
+  </div>
+
+  <footer>
+    Model trénovaný na vlastním datasetu &bull; YOLOv8 &bull;
+    <a href="https://github.com/AlbertSch8/CarSquareDetection" target="_blank" rel="noopener">GitHub</a>
+  </footer>
 
 <script>
-  const dropZone  = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
+  // ── DOM refs ──────────────────────────────────────────────────────────────
+  const dropZone    = document.getElementById('drop-zone');
+  const fileInput   = document.getElementById('file-input');
+  const cameraInput = document.getElementById('camera-input');
+  const choosBtn    = document.getElementById('choose-file-btn');
+  const cameraBtn   = document.getElementById('camera-btn');
   const previewWrap = document.getElementById('preview-wrap');
   const previewImg  = document.getElementById('preview-img');
   const analyzeBtn  = document.getElementById('analyze-btn');
+  const spinnerWrap = document.getElementById('spinner-wrap');
   const spinner     = document.getElementById('spinner');
+  const spinnerMsg  = document.getElementById('spinner-msg');
   const resultsDiv  = document.getElementById('results');
+  const progressEl  = document.getElementById('progress-steps');
+  const stepUpload  = document.getElementById('step-upload');
+  const stepAnalyze = document.getElementById('step-analyze');
+  const stepDone    = document.getElementById('step-done');
+  const historySec  = document.getElementById('history-section');
+  const historyGrid = document.getElementById('history-grid');
+  const clearHistBtn= document.getElementById('clear-history-btn');
 
-  let selectedFile = null;
+  let selectedFile   = null;
+  let lastResultB64  = null;
 
+  const HISTORY_KEY  = 'car_history';
+  const MAX_HISTORY  = 6;
+
+  // ── Detekce mobilního zařízení → zobrazit tlačítko kamery ────────────────
+  if (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    cameraBtn.style.display = 'flex';
+  }
+
+  // ── Warm-up ───────────────────────────────────────────────────────────────
+  fetch('/health').catch(() => {});
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   function brandClass(brand) {
     const b = brand.toLowerCase();
     if (b.includes('škoda') || b.includes('skoda')) return 'skoda';
-    if (b.includes('audi')) return 'audi';
-    if (b.includes('volkswagen')) return 'volkswagen';
+    if (b.includes('audi'))                          return 'audi';
+    if (b.includes('volkswagen'))                    return 'volkswagen';
     return '';
+  }
+
+  function setStep(step) {
+    // step: 'upload' | 'analyze' | 'done'
+    [stepUpload, stepAnalyze, stepDone].forEach(s => {
+      s.classList.remove('active', 'done');
+    });
+    if (step === 'upload')  { stepUpload.classList.add('active'); }
+    if (step === 'analyze') { stepUpload.classList.add('done'); stepAnalyze.classList.add('active'); }
+    if (step === 'done')    { stepUpload.classList.add('done'); stepAnalyze.classList.add('done'); stepDone.classList.add('done'); }
   }
 
   function showPreview(file) {
     selectedFile = file;
     const reader = new FileReader();
     reader.onload = e => {
-      previewImg.src = e.target.result;
-      previewWrap.style.display = 'flex';
-      analyzeBtn.style.display = 'block';
-      resultsDiv.style.display = 'none';
-      resultsDiv.innerHTML = '';
+      previewImg.src     = e.target.result;
+      previewWrap.style.display  = 'flex';
+      analyzeBtn.style.display   = 'block';
+      resultsDiv.style.display   = 'none';
+      resultsDiv.innerHTML       = '';
+      progressEl.style.display   = 'none';
     };
     reader.readAsDataURL(file);
   }
 
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) showPreview(fileInput.files[0]);
+  // ── Historie (localStorage) ────────────────────────────────────────────────
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function saveHistory(items) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+  }
+
+  function addToHistory(imgB64, brands, filename) {
+    const items = loadHistory();
+    items.unshift({ imgB64, brands, filename, ts: Date.now() });
+    saveHistory(items.slice(0, MAX_HISTORY));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const items = loadHistory();
+    if (!items.length) { historySec.style.display = 'none'; return; }
+    historySec.style.display = 'block';
+    historyGrid.innerHTML = '';
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'history-item';
+      const label = item.filename ? item.filename.slice(0, 20) : 'fotka';
+      const brandsText = item.brands && item.brands.length
+        ? item.brands.map(b => `<span class="brand-${brandClass(b)}">${b}</span>`).join(', ')
+        : '<span style="color:#555">?</span>';
+      el.innerHTML = `
+        <img src="data:image/jpeg;base64,${item.imgB64}" alt="historie" loading="lazy" />
+        <div class="history-item-label">${label}</div>
+        <div class="history-item-brands">${brandsText}</div>`;
+      historyGrid.appendChild(el);
+    });
+  }
+
+  clearHistBtn.addEventListener('click', () => {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
   });
+
+  renderHistory();
+
+  // ── Upload triggers ───────────────────────────────────────────────────────
+  choosBtn.addEventListener('click',  () => fileInput.click());
+  cameraBtn.addEventListener('click', () => cameraInput.click());
+  fileInput.addEventListener('change',   () => { if (fileInput.files[0])   showPreview(fileInput.files[0]); });
+  cameraInput.addEventListener('change', () => { if (cameraInput.files[0]) showPreview(cameraInput.files[0]); });
 
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
@@ -296,48 +586,68 @@
     if (file) showPreview(file);
   });
 
-  // Warm-up: jakmile se stránka načte, probudíme server
-  fetch('/health').catch(() => {});
-
-  const spinnerMsg = document.getElementById('spinner-msg');
-  let spinnerTimer = null;
-
+  // ── Analýza ───────────────────────────────────────────────────────────────
   analyzeBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     analyzeBtn.disabled = true;
-    spinner.style.display = 'block';
-    spinnerMsg.style.display = 'block';
-    spinnerMsg.textContent = 'Analyzuji\u2026';
-    resultsDiv.style.display = 'none';
-    resultsDiv.innerHTML = '';
+    progressEl.style.display = 'flex';
+    spinnerWrap.style.display = 'flex';
+    resultsDiv.style.display  = 'none';
+    resultsDiv.innerHTML      = '';
 
-    // Po 10s upozorníme uživatele že server se probouzí
-    spinnerTimer = setTimeout(() => {
-      spinnerMsg.textContent = 'Server se probouzí, chvíli strpení\u2026';
-    }, 10000);
+    setStep('upload');
+    spinnerMsg.textContent = 'Nahrávám obrázek…';
 
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    // Timeout 90 sekund
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000);
+    const timeoutId  = setTimeout(() => controller.abort(), 90000);
+
+    // Po 2s přejdeme na krok "analyzuji"
+    const analyzeTimer = setTimeout(() => {
+      setStep('analyze');
+      spinnerMsg.textContent = 'Analyzuji…';
+    }, 2000);
+
+    // Po 12s upozorníme na probouzení
+    const wakeTimer = setTimeout(() => {
+      spinnerMsg.textContent = 'Server se probouzí, chvíli strpení…';
+    }, 12000);
 
     try {
       const res = await fetch('/predict', { method: 'POST', body: formData, signal: controller.signal });
       clearTimeout(timeoutId);
-      clearTimeout(spinnerTimer);
-      const data = await res.json();
+      clearTimeout(analyzeTimer);
+      clearTimeout(wakeTimer);
 
-      spinner.style.display = 'none';
-      spinnerMsg.style.display = 'none';
-      resultsDiv.style.display = 'block';
+      setStep('done');
+      spinnerMsg.textContent = 'Hotovo!';
+      await new Promise(r => setTimeout(r, 500)); // krátce zobrazit "Hotovo"
+
+      spinnerWrap.style.display = 'none';
+      resultsDiv.style.display  = 'block';
+
+      const data = await res.json();
 
       if (data.error) {
         resultsDiv.innerHTML = `<div class="error-box">⚠️ ${data.error}</div>`;
       } else {
-        let html = `<img class="result-img" src="data:image/jpeg;base64,${data.image}" alt="výsledek" />`;
+        lastResultB64 = data.image;
+        const detectedBrands = data.detections ? data.detections.map(d => d.brand) : [];
+
+        // Ulož do historie
+        addToHistory(data.image, detectedBrands, selectedFile.name);
+
+        let html = `<img class="result-img" id="result-img" src="data:image/jpeg;base64,${data.image}" alt="výsledek" />`;
+
+        // Akční tlačítka
+        html += `
+          <div class="result-actions">
+            <button id="download-btn">⬇ Stáhnout</button>
+            <button id="reset-btn">↩ Jiný obrázek</button>
+          </div>`;
 
         if (data.message) {
           html += `<div class="message-box">ℹ️ ${data.message}</div>`;
@@ -359,26 +669,38 @@
           html += '</div>';
         }
 
-        html += `<button class="reset-btn" id="reset-btn">↩ Nahrát jiný obrázek</button>`;
         resultsDiv.innerHTML = html;
 
+        // Stažení anotovaného obrázku
+        document.getElementById('download-btn').addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href     = `data:image/jpeg;base64,${lastResultB64}`;
+          a.download = `anotovano_${selectedFile ? selectedFile.name : 'vysledek.jpg'}`;
+          a.click();
+        });
+
+        // Reset
         document.getElementById('reset-btn').addEventListener('click', () => {
           selectedFile = null;
-          fileInput.value = '';
-          previewWrap.style.display = 'none';
-          analyzeBtn.style.display = 'none';
-          resultsDiv.style.display = 'none';
-          resultsDiv.innerHTML = '';
-          analyzeBtn.disabled = false;
+          fileInput.value     = '';
+          cameraInput.value   = '';
+          previewWrap.style.display  = 'none';
+          analyzeBtn.style.display   = 'none';
+          progressEl.style.display   = 'none';
+          resultsDiv.style.display   = 'none';
+          resultsDiv.innerHTML       = '';
+          analyzeBtn.disabled        = false;
         });
       }
+
     } catch (err) {
-      clearTimeout(spinnerTimer);
-      spinner.style.display = 'none';
-      spinnerMsg.style.display = 'none';
-      resultsDiv.style.display = 'block';
+      clearTimeout(timeoutId);
+      clearTimeout(analyzeTimer);
+      clearTimeout(wakeTimer);
+      spinnerWrap.style.display = 'none';
+      resultsDiv.style.display  = 'block';
       if (err.name === 'AbortError') {
-        resultsDiv.innerHTML = `<div class="error-box">⚠️ Server neodpovědl včas (90 s). Zkus to znovu &ndash; server se pravděpodobně probouzel.</div>`;
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ Server neodpověděl včas (90 s). Zkus to znovu – server se pravděpodobně probouzel.</div>`;
       } else {
         resultsDiv.innerHTML = `<div class="error-box">⚠️ Chyba při komunikaci se serverem.</div>`;
       }
