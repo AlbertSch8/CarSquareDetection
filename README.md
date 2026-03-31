@@ -1,103 +1,105 @@
-CarSquareDetection
+# CarSquareDetection
 
-Automatické vytváření datasetu pro detekci a klasifikaci značek automobilů (Škoda, Audi, Volkswagen) pomocí modelu Ultralytics YOLO.
+Webová aplikace pro detekci a klasifikaci značek automobilů (Škoda, Audi, Volkswagen) pomocí modelu Ultralytics YOLO. Nahraj fotku auta a aplikace ti řekne, o jakou značku se jedná.
 
-Tento projekt slouží k automatické anotaci obrázků automobilů. Skript detekuje auta na obrázcích, přiřadí jim značku podle složky, ve které se obrázek nachází, a vytvoří dataset ve formátu YOLO, který lze použít pro trénování modelů počítačového vidění.
+---
 
-🚗 Funkce projektu
+## 🚀 Spuštění na jiném PC (krok po kroku)
 
-automatická detekce aut pomocí YOLO
+Před začátkem se ujisti, že máš nainstalované:
 
-generování YOLO datasetu
+- **Python 3.10 nebo 3.11** – stáhnout na [python.org](https://www.python.org/downloads/)  
+  *(při instalaci zaškrtni „Add Python to PATH")*
+- **Git** – stáhnout na [git-scm.com](https://git-scm.com/)
 
-filtrace pouze objektů car
+Pak stačí 4 příkazy v terminálu:
 
-podpora značek Škoda / Audi / Volkswagen
+```bash
+git clone https://github.com/AlbertSch8/CarSquareDetection.git
+cd CarSquareDetection
+pip install -r requirements.txt
+python app.py
+```
 
-progress bar při zpracování obrázků
+Po spuštění otevři v prohlížeči adresu:
 
-kompatibilita s YOLO training pipeline
+```
+http://127.0.0.1:5000
+```
 
-📁 Struktura projektu
+Ukončení aplikace: `Ctrl + C`
 
-Před spuštěním skriptu musí mít projekt tuto strukturu:
+---
 
+## 🚗 Funkce projektu
+
+- rozpoznávání značky auta ze fotky (Škoda / Audi / Volkswagen)
+- webové rozhraní postavené na Flasku
+- detekce pomocí vlastního YOLO modelu (`best.pt`)
+- automatická anotace obrázků a generování YOLO datasetu
+- podpora trénovací pipeline
+
+---
+
+## 📁 Struktura projektu
+
+```
 projekt/
 │
-├─ obrazky_skoda/
-│   ├─ img1.jpg
-│   ├─ img2.jpg
-│
-├─ obrazky_audi/
-│   ├─ img1.jpg
-│   ├─ img2.jpg
-│
-├─ obrazky_volkswagen/
-│   ├─ img1.jpg
-│   ├─ img2.jpg
-│
-├─ script.py
-└─ README.md
+├── app.py                  # Flask webová aplikace
+├── annotator.py            # Skript pro automatickou anotaci
+├── best.pt                 # Natrénovaný YOLO model
+├── requirements.txt        # Seznam závislostí
+├── templates/
+│   └── index.html          # Šablona webového rozhraní
+├── obrazky_skoda/          # Trénovací obrázky Škoda
+├── obrazky_audi/           # Trénovací obrázky Audi
+├── obrazky_volkswagen/     # Trénovací obrázky Volkswagen
+└── anotace_aut/            # Vygenerovaný YOLO dataset
+    ├── images/
+    └── labels/
+```
 
-Každá složka obsahuje obrázky jedné značky auta.
+---
 
-⚙️ Instalace
+## ⚙️ Generování datasetu (volitelné)
 
-Nejprve nainstalujte potřebné knihovny:
+Pokud chceš sám vygenerovat anotace z obrázků ve složkách `obrazky_*/`, spusť:
 
-pip install ultralytics
-pip install opencv-python
-pip install tqdm
-▶️ Spuštění skriptu
+```bash
+python annotator.py
+```
 
-Skript se spouští příkazem:
+Skript:
+1. načte YOLO model
+2. detekuje auta na obrázcích
+3. přiřadí značku podle složky
+4. vytvoří YOLO anotace do složky `anotace_aut/`
 
-python script.py
+---
 
-Skript následně:
+## 🏷 Mapování tříd
 
-načte YOLO model
+| ID | Značka     |
+|----|------------|
+| 0  | Škoda      |
+| 1  | Audi       |
+| 2  | Volkswagen |
 
-detekuje auta na obrázcích
+---
 
-přiřadí značku podle složky
+## 🧾 Formát anotací (YOLO)
 
-vytvoří YOLO anotace
-
-📦 Výstup datasetu
-
-Po spuštění skriptu vznikne složka:
-
-anotace_aut/
-│
-├─ images/
-│   ├─ img1.jpg
-│   ├─ img2.jpg
-│
-└─ labels/
-    ├─ img1.txt
-    ├─ img2.txt
-
-Každý obrázek má odpovídající soubor s anotací.
-
-🧾 Formát anotací
-
-Dataset používá YOLO formát:
-
+```
 class x_center y_center width height
+```
 
 Příklad:
-
+```
 1 0.52 0.44 0.31 0.21
+```
 
 Souřadnice jsou normalizované v rozsahu 0–1.
-
-🏷 Mapování tříd
-
-Dataset používá následující třídy:
-
-0 = skoda
-1 = audi
 2 = volkswagen
 
 Třída se určuje podle složky, ze které obrázek pochází.
