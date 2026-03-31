@@ -16,3 +16,6 @@ yolov8s.pt
 
 # Výstupy
 ukazky_anotaci/
+
+# Editor
+.idea/
